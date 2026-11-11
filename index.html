@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="id"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#14301c">
+<link rel="manifest" href="manifest.json"><link rel="icon" href="icon.svg">
+<link rel="apple-touch-icon" href="icon.svg">
+<title>Chopper Team</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--g9:#14301c;--g7:#1f5130;--g5:#3f8a4f;--g1:#e3efd9;--hay:#f2b632;--soil:#4a3322;--bg:#eef3e6;--card:#fff;--ink:#1d2a20;--mut:#6b7a6c;--red:#d2523b;--blue:#3d7fb5;font-family:'Bricolage Grotesque',system-ui,sans-serif}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--ink);padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+header{background:var(--g9);color:#fff;padding:calc(14px + env(safe-area-inset-top)) 18px 70px;position:relative;overflow:hidden}
+header:after{content:"";position:absolute;left:-10%;right:-10%;bottom:-30px;height:60px;background:var(--bg);border-radius:50% 50% 0 0}
+.hill{position:absolute;right:-30px;top:10px;font-size:110px;opacity:.12;animation:sway 6s ease-in-out infinite}
+@keyframes sway{50%{transform:rotate(8deg) translateY(6px)}}
+header h1{font-size:24px;font-weight:800;letter-spacing:-.4px}header p{opacity:.75;font-size:13px;margin-top:2px}
+.top{display:flex;justify-content:space-between;align-items:center}
+.sync{font-size:12px;background:#ffffff22;padding:6px 10px;border-radius:99px;border:0;color:#fff;font-family:inherit}
+.sync.spin b{display:inline-block;animation:rot 1s linear infinite}@keyframes rot{to{transform:rotate(360deg)}}
+main{padding:0 14px;margin-top:-52px;position:relative;z-index:2}
+.view{animation:in .35s ease}@keyframes in{from{opacity:0;transform:translateY(12px)}}
+.card{background:var(--card);border-radius:20px;padding:16px;margin-bottom:12px;box-shadow:0 2px 12px #14301c14}
+.hero{display:flex;align-items:center;gap:16px}
+.ring{width:104px;height:104px;flex:none}.ring circle{fill:none;stroke-width:11;stroke-linecap:round}
+.ring .bg{stroke:var(--g1)}.ring .fg{stroke:var(--g5);transition:stroke-dashoffset 1.2s cubic-bezier(.2,.8,.2,1)}
+.ringtxt{position:absolute;inset:0;display:grid;place-items:center;font-size:26px;font-weight:800}
+.hero h2{font-size:18px}.hero small{color:var(--mut);font-size:13px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.stat{background:var(--card);border-radius:18px;padding:14px;box-shadow:0 2px 12px #14301c14}
+.stat i{font-style:normal;font-size:22px}.stat b{display:block;font-size:26px;font-weight:800;margin-top:4px}.stat span{font-size:12px;color:var(--mut)}
+h3{font-size:15px;margin:6px 4px 10px;display:flex;align-items:center;gap:6px}
+.row{display:flex;align-items:center;gap:12px}
+.plate{font-weight:800;font-size:16px;background:#f7f3e3;border:2px solid var(--soil);border-radius:8px;padding:3px 9px;white-space:nowrap}
+.v{cursor:pointer;transition:transform .15s}.v:active{transform:scale(.97)}
+.v .meta{font-size:12px;color:var(--mut);margin-top:8px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.badge{font-size:11px;font-weight:600;padding:4px 9px;border-radius:99px;margin-left:auto;white-space:nowrap}
+.badge{font-size:12px;padding:5px 12px}.badge.wait{background:#8a948b;color:#fff}.badge.run{background:var(--hay);color:#3b2a00;animation:pulse 1.6s infinite}.badge.done{background:var(--g5);color:#fff}
+.v{border-left:8px solid transparent}.v.s-wait{background:#eceeea;border-left-color:#9aa49b}.v.s-run{background:#fff1c4;border-left-color:var(--hay)}.v.s-done{background:#d9efd0;border-left-color:var(--g5)}
+.chip.on.k-wait{background:#6f7a70}.chip.on.k-run{background:var(--hay);color:#3b2a00}.chip.on.k-done{background:var(--g5)}
+.view.na{animation:none}
+.shg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.shc{border-radius:18px;padding:14px;color:#fff;box-shadow:0 2px 12px #14301c14}
+.shc.s1{background:var(--hay);color:var(--soil)}.shc.s2{background:var(--blue)}
+.shc small{display:block;font-size:12px;font-weight:600;opacity:.85}.shc b{display:block;font-size:26px;font-weight:800;margin:4px 0 2px}.shc span{font-size:12px;opacity:.9}
+.shbar{display:flex;height:12px;border-radius:99px;overflow:hidden;background:var(--g1);margin:12px 0 8px}.shbar i{display:block;transition:width 1s}.shbar .b1{background:var(--hay)}.shbar .b2{background:var(--blue)}
+.shnote{font-size:12px;color:var(--mut);text-align:center}.shwarn{font-size:12px;color:var(--red);font-weight:600;margin-top:6px;text-align:center}
+.stag{font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;margin-left:4px;color:#fff}.stag.t1{background:#c98f0a}.stag.t2{background:var(--blue)}
+.chip.on.k-sh1{background:var(--hay);color:#3b2a00}.chip.on.k-sh2{background:var(--blue)}
+.att{display:flex;gap:6px;margin-top:8px}.ab{flex:1;border:2px solid #dfe6da;background:#fff;border-radius:10px;padding:7px 0;font:600 12px inherit;font-family:inherit;color:var(--mut);transition:.2s}
+.ab:active{transform:scale(.93)}.ab.on{color:#fff;border-color:transparent}.ab.on.a-Masuk{background:var(--g5)}.ab.on.a-Sakit{background:var(--blue)}.ab.on.a-Mangkir{background:var(--red)}
+.person.p-Masuk{box-shadow:inset 4px 0 var(--g5);padding-left:10px}.person.p-Sakit{box-shadow:inset 4px 0 var(--blue);padding-left:10px}.person.p-Mangkir{box-shadow:inset 4px 0 var(--red);padding-left:10px}
+.sg div{padding:10px}.t-Masuk{background:var(--g5)}.t-Sakit{background:var(--blue)}.t-Mangkir{background:var(--red)}.t-Belum{background:#8a948b}
+@keyframes pulse{50%{box-shadow:0 0 0 6px #f2b63233}}
+.tm{font-variant-numeric:tabular-nums;font-weight:800;color:var(--g7)}
+.chips{display:flex;gap:8px;overflow-x:auto;margin-bottom:10px;padding-bottom:4px}
+.chip{border:0;background:#fff;padding:9px 14px;border-radius:99px;font:600 13px inherit;font-family:inherit;white-space:nowrap;color:var(--ink);box-shadow:0 1px 6px #14301c14}
+.chip.on{background:var(--g7);color:#fff}
+input,select{width:100%;padding:12px 14px;border-radius:14px;border:2px solid var(--g1);font:inherit;background:#fff;margin-bottom:10px}
+input:focus{outline:none;border-color:var(--g5)}
+.days{display:flex;gap:8px;overflow-x:auto;margin-bottom:12px;padding:2px}
+.day{flex:none;width:52px;padding:8px 0;border-radius:14px;border:0;background:#fff;text-align:center;font-family:inherit}
+.day small{display:block;font-size:11px;color:var(--mut)}.day b{font-size:18px}
+.day.on{background:var(--g7);color:#fff}.day.on small{color:#cfe5c8}.day.now b:after{content:"•";color:var(--hay);display:block;line-height:6px}
+.person{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #eef2ea}.person:last-child{border:0}
+.av{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-weight:800;color:#fff;background:var(--g5);flex:none}
+.av.L{background:var(--hay);color:var(--soil)}.lead{font-size:11px;color:var(--mut)}
+.sg{display:flex;gap:10px;margin-bottom:12px}.sg div{flex:1;border-radius:16px;padding:12px;color:#fff}
+.sp{background:var(--hay);color:var(--soil)!important}.ss{background:var(--blue)}.so{background:var(--red)}
+.sg b{font-size:24px;display:block}
+.unit{display:flex;align-items:center;gap:14px}.unit .ic{font-size:30px;width:54px;height:54px;border-radius:16px;background:var(--g1);display:grid;place-items:center}
+.unit.busy .ic{background:#fdf0cc;animation:shake .5s infinite alternate}@keyframes shake{to{transform:rotate(-6deg)}}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fff;display:flex;padding:8px 8px calc(8px + env(safe-area-inset-bottom));box-shadow:0 -4px 20px #14301c1a;z-index:5}
+nav button{flex:1;border:0;background:none;font:600 11px inherit;font-family:inherit;color:var(--mut);padding:6px;border-radius:14px;transition:.2s}
+nav button i{display:block;font-style:normal;font-size:22px;transition:transform .25s}
+nav button.on{color:var(--g7);background:var(--g1)}nav button.on i{transform:translateY(-2px) scale(1.15)}
+.sheet-bg{position:fixed;inset:0;background:#0007;z-index:9;opacity:0;pointer-events:none;transition:.25s}.sheet-bg.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;background:#fff;border-radius:26px 26px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom));z-index:10;transform:translateY(105%);transition:transform .35s cubic-bezier(.2,.9,.3,1);max-height:90vh;overflow:auto}
+.sheet.on{transform:none}
+.btn{border:0;border-radius:14px;padding:13px;font:700 15px inherit;font-family:inherit;width:100%;background:var(--g7);color:#fff}
+.btn.s{background:var(--g1);color:var(--g7);width:auto;padding:12px 14px;white-space:nowrap}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.t{display:flex;gap:8px;align-items:flex-start}.t>div{flex:1}
+label{font-size:12px;color:var(--mut);font-weight:600;display:block;margin-bottom:4px}
+.toast{position:fixed;left:50%;bottom:100px;transform:translate(-50%,30px);background:var(--g9);color:#fff;padding:12px 18px;border-radius:99px;opacity:0;transition:.3s;z-index:20;font-size:14px}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.empty{text-align:center;color:var(--mut);padding:26px 10px}
+.skel{height:80px;border-radius:18px;background:linear-gradient(90deg,#e2eadb,#f3f7ee,#e2eadb);background-size:200% 100%;animation:sk 1.2s infinite;margin-bottom:12px}@keyframes sk{to{background-position:-200% 0}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head><body>
+<header><div class="hill">🌾</div>
+<div class="top"><div><h1>🚜 Chopper Team</h1><p id="dt"></p></div><button class="sync" id="sy" onclick="load()"><b>⟳</b> <span id="sl">Muat</span></button></div></header>
+<main id="app"><div class="skel"></div><div class="skel"></div></main>
+<nav id="nav"></nav>
+<div class="sheet-bg" id="bg" onclick="closeS()"></div><div class="sheet" id="sh"></div><div class="toast" id="ts"></div>
+<script>
+// ====== GANTI DENGAN URL WEB APP APPS SCRIPT ANDA ======
+const API='https://script.google.com/macros/s/AKfycbzonVAWA2M6OU9sgsAB6-O5-U7IoTnKBlN_-1QRGGiV_U3iRSzf0N7eTrqL_QcobFSspA/exec';
+const $=s=>document.querySelector(s);
+const S={tab:'home',d:null,filter:'all',q:'',day:new Date().getDate(),sel:null,unit:''};
+const HARI=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+const mm=t=>{const x=String(t||'').match(/^(\d+)[:.](\d+)/);return x?+x[1]*60+ +x[2]:null};
+const dur=(a,b)=>{const x=mm(a),y=mm(b);if(x==null||y==null)return null;let d=y-x;return d<0?d+1440:d};
+const fd=m=>m==null?'-':(m>=60?Math.floor(m/60)+'j ':'')+m%60+'m';
+const nt=s=>parseInt(String(s).replace(/\D/g,''))||0;
+const kg=n=>n.toLocaleString('id-ID');
+const st=a=>a.selesai?'done':a.mulai?'run':'wait';
+const lbl={wait:'Belum',run:'Proses',done:'Selesai'};
+const hm=()=>new Date().toTimeString().slice(0,5);
+const toast=m=>{const t=$('#ts');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),2200)};
+$('#dt').textContent=new Date().toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+async function load(){const first=!S.d;
+  $('#sy').classList.add('spin');
+  try{
+    const r=await fetch(API+'?day='+S.day);const j=await r.json();
+    if(!j.ok)throw new Error(j.error);
+    S.d=j;localStorage.setItem('ch',JSON.stringify(j));$('#sl').textContent='Sinkron '+hm();
+  }catch(e){
+    const c=localStorage.getItem('ch');if(c&&!S.d)S.d=JSON.parse(c);
+    $('#sl').textContent='Offline';toast('Gagal memuat: '+e.message);
+  }
+  $('#sy').classList.remove('spin');render(first);
+}
+
+function stats(){
+  const a=S.d.arrivals,done=a.filter(x=>st(x)=='done'),run=a.filter(x=>st(x)=='run');
+  const ds=done.map(x=>dur(x.mulai,x.selesai)).filter(x=>x!=null);
+  return{a,done,run,wait:a.length-done.length-run.length,
+    tot:a.reduce((s,x)=>s+nt(x.netto),0),done_kg:done.reduce((s,x)=>s+nt(x.netto),0),
+    sh:shiftStats(done),
+    avg:ds.length?Math.round(ds.reduce((s,x)=>s+x,0)/ds.length):null};
+}
+const fm=a=>S.filter=='all'||(S.filter.startsWith('sh')?a.shift=='Shift '+S.filter.slice(2):st(a)==S.filter);
+const SHIFTS=['Shift 1','Shift 2'];
+function shiftStats(done){const r={};SHIFTS.concat(['']).forEach(k=>r[k]={n:0,kg:0});
+  done.forEach(x=>{const k=SHIFTS.includes(x.shift)?x.shift:'';r[k].n++;r[k].kg+=nt(x.netto)});return r}
+const stag=a=>a.shift?`<span class="stag t${a.shift.slice(-1)}">S${a.shift.slice(-1)}</span>`:'';
+function veh(a){const s=st(a);return`<div class="card v s-${s}" onclick="openS(${a.row})"><div class="row"><span class="plate">${a.plat}</span><div><b>${a.sup}</b><div class="lead">PIC ${a.pic}</div></div><span class="badge ${s}">${lbl[s]}</span></div>
+<div class="meta"><span>⚖️ ${a.netto} kg</span><span>${a.unit?'🚜 '+a.unit:'🚜 -'}${stag(a)}</span><span>${s=='run'?`⏱ <span class="tm" data-s="${a.mulai}"></span>`:s=='done'?'⏱ '+fd(dur(a.mulai,a.selesai)):'🕐 '+(a.mulai||'-')}</span></div></div>`}
+
+const V={
+home(){const s=stats(),p=s.a.length?s.done.length/s.a.length:0,C=2*Math.PI*43;
+ const sc=S.d.schedule.list,n=x=>sc.filter(r=>r.shift==x).length;
+ return`<div class="card hero"><div style="position:relative"><svg class="ring" viewBox="0 0 104 104"><circle class="bg" cx="52" cy="52" r="43"/><circle class="fg" id="fg" cx="52" cy="52" r="43" stroke-dasharray="${C}" stroke-dashoffset="${C}" transform="rotate(-90 52 52)"/></svg><div class="ringtxt" data-c="${Math.round(p*100)}" data-sfx="%">0%</div></div>
+ <div><h2>Progres chopper hari ini</h2><small>${s.done.length} dari ${s.a.length} truk selesai</small></div></div>
+ <div class="grid"><div class="stat"><i>🚛</i><b data-c="${s.a.length}">0</b><span>Truk datang</span></div>
+ <div class="stat"><i>⚖️</i><b data-c="${s.tot}">0</b><span>Total netto (kg)</span></div>
+ <div class="stat"><i>⏳</i><b data-c="${s.wait}">0</b><span>Antre</span></div>
+ <div class="stat"><i>⏱</i><b>${fd(s.avg)}</b><span>Rata-rata durasi</span></div></div>
+ <h3>⚖️ Tonase chopper per shift</h3><div class="card" style="padding:12px"><div class="shg" style="margin-bottom:0">${SHIFTS.map((k,i)=>`<div class="shc s${i+1}"><small>${k}</small><b data-c="${s.sh[k].kg}">0</b><span>kg · ${s.sh[k].n} truk selesai</span></div>`).join('')}</div>
+ ${(()=>{const a=s.sh['Shift 1'].kg,b=s.sh['Shift 2'].kg,t=a+b,d=Math.abs(a-b);return`<div class="shbar"><i class="b1" style="width:${t?a/t*100:50}%"></i><i class="b2" style="width:${t?b/t*100:50}%"></i></div><div class="shnote">${t?(d?'Selisih '+kg(d)+' kg · '+(a>b?'Shift 1':'Shift 2')+' lebih banyak':'Seimbang'):'Belum ada truk selesai'}</div>`})()}
+ ${s.sh[''].n?`<div class="shwarn">⚠️ ${s.sh[''].n} truk selesai (${kg(s.sh[''].kg)} kg) belum diberi shift</div>`:''}</div>
+ <h3>🔥 Sedang berjalan</h3>${s.run.map(veh).join('')||'<div class="card empty">Belum ada proses berjalan</div>'}
+ <h3>👷 Shift hari ini</h3><div class="sg"><div class="sp"><b>${n('P')}</b>Pagi</div><div class="ss"><b>${n('S')}</b>Siang</div><div class="so"><b>${n('OFF')}</b>Libur</div></div>`},
+list(){const q=S.q.toLowerCase();
+ const L=S.d.arrivals.filter(a=>fm(a)&&(a.plat+a.sup+a.pic).toLowerCase().includes(q));
+ return`<input id="q" placeholder="🔍 Cari plat / supplier / PIC" value="${S.q}" oninput="S.q=this.value;fl()">
+ <div class="chips">${[['all','Semua'],['wait','Belum'],['run','Proses'],['done','Selesai'],['sh1','☀️ Shift 1'],['sh2','🌙 Shift 2']].map(([k,t])=>`<button class="chip k-${k} ${S.filter==k?'on':''}" onclick="S.filter='${k}';render()">${t}</button>`).join('')}</div>
+ <div id="fl">${L.map(veh).join('')||'<div class="card empty">Tidak ada kendaraan</div>'}</div>`},
+jadwal(){const d=S.d,sc=d.schedule,att=d.att||{},now=new Date(),dim=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
+ let h='<div class="days" id="ds">';for(let i=1;i<=dim;i++){const w=new Date(now.getFullYear(),now.getMonth(),i).getDay();
+ h+=`<button class="day ${i==S.day?'on':''} ${i==d.today?'now':''}" onclick="S.day=${i};load()"><small>${HARI[w].slice(0,3)}</small><b>${i}</b></button>`}
+ h+='</div>';const g=x=>sc.list.filter(r=>r.shift==x),work=sc.list.filter(r=>r.shift=='P'||r.shift=='S');
+ const c=k=>work.filter(r=>att[r.nama]==k).length,bl=work.length-c('Masuk')-c('Sakit')-c('Mangkir');
+ h+=`<div class="sg">${[['Masuk',c('Masuk')],['Sakit',c('Sakit')],['Mangkir',c('Mangkir')],['Belum',bl]].map(([k,n])=>`<div class="t-${k}"><b>${n}</b>${k}</div>`).join('')}</div>`;
+ const grp=(t,x)=>{const l=g(x);if(!l.length)return'';const w=x!='OFF';
+  return`<h3>${t} (${l.length})</h3><div class="card">${l.map(r=>{const a=att[r.nama]||'';
+  return`<div class="person ${a?'p-'+a:''}"><div class="av ${/leader|kepala/i.test(r.jabatan)?'L':''}">${r.nama[0]}</div><div style="flex:1"><b>${r.nama}</b><div class="lead">${r.jabatan}</div>
+  ${w?`<div class="att">${['Masuk','Sakit','Mangkir'].map(k=>`<button class="ab ${a==k?'on a-'+k:''}" data-n="${r.nama}" data-k="${k}" onclick="setAtt(this)">${k}</button>`).join('')}</div>`:''}</div></div>`}).join('')}</div>`};
+ return h+grp('☀️ Shift Pagi','P')+grp('🌙 Shift Siang','S')+grp('🛌 Libur','OFF')},
+unit(){const s=stats();return S.d.units.map(u=>{const mine=s.a.filter(a=>a.unit==u),r=mine.find(a=>st(a)=='run'),dn=mine.filter(a=>st(a)=='done');
+ const ds=dn.map(a=>dur(a.mulai,a.selesai)).filter(x=>x!=null);
+ return`<div class="card unit ${r?'busy':''}"><div class="ic">🚜</div><div style="flex:1"><b>${u}</b><div class="lead">${r?'Sedang chopper '+r.plat:'Siap dipakai'}</div><div class="lead">${dn.length} truk selesai · ${nt(dn.reduce((a,x)=>a+nt(x.netto),0))>0?kg(dn.reduce((a,x)=>a+nt(x.netto),0))+' kg':'0 kg'} · rata ${fd(ds.length?Math.round(ds.reduce((a,b)=>a+b)/ds.length):null)}</div></div><span class="badge ${r?'run':'done'}">${r?'Jalan':'Free'}</span></div>`}).join('')||'<div class="empty">Isi sheet Unit</div>'}
+};
+function fl(){const q=S.q.toLowerCase();$('#fl').innerHTML=S.d.arrivals.filter(a=>fm(a)&&(a.plat+a.sup+a.pic).toLowerCase().includes(q)).map(veh).join('')||'<div class="card empty">Tidak ada kendaraan</div>'}
+
+const TABS=[['home','🏠','Beranda'],['list','🚛','Kendaraan'],['jadwal','📅','Jadwal'],['unit','🚜','Unit']];
+$('#nav').innerHTML=TABS.map(([k,i,t])=>`<button data-k="${k}" onclick="S.tab='${k}';render(1)"><i>${i}</i>${t}</button>`).join('');
+function render(anim){
+  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.k==S.tab));
+  if(!S.d)return;const y=scrollY,q=document.activeElement&&document.activeElement.id=='q';
+  $('#app').innerHTML=`<div class="view ${anim?'':'na'}">${V[S.tab=='list'?'list':S.tab]()}</div>`;
+  if(!anim)scrollTo(0,y);else scrollTo(0,0);
+  if(q){const e=$('#q');e.focus();e.setSelectionRange(99,99)}
+  count();tick();const ds=$('#ds .on');if(ds)ds.scrollIntoView({inline:'center',block:'nearest'});
+}
+function count(){
+  const fg=$('#fg');if(fg){const C=2*Math.PI*43,p=+fg.parentNode.nextElementSibling.dataset.c/100;setTimeout(()=>fg.style.strokeDashoffset=C*(1-p),60)}
+  document.querySelectorAll('[data-c]').forEach(e=>{const to=+e.dataset.c,t0=performance.now();
+   const f=n=>{const k=Math.min(1,(n-t0)/900),v=Math.round(to*(1-Math.pow(1-k,3)));e.textContent=(to>9999?kg(v):v)+(e.dataset.sfx||'');if(k<1)requestAnimationFrame(f)};requestAnimationFrame(f)});
+}
+function tick(){const n=new Date(),sec=n.getHours()*3600+n.getMinutes()*60+n.getSeconds();
+  document.querySelectorAll('.tm').forEach(e=>{let d=sec-mm(e.dataset.s)*60;if(d<0)d+=86400;
+   e.textContent=[Math.floor(d/3600),Math.floor(d%3600/60)%60,d%60].map(x=>String(x).padStart(2,'0')).join(':')})}
+setInterval(tick,1000);setInterval(()=>{if(!$('#sh').classList.contains('on'))load()},45000);
+
+async function setAtt(b){
+  const n=b.dataset.n,k=b.dataset.k,d=S.d;d.att=d.att||{};const nv=d.att[n]===k?'':k;
+  if(nv)d.att[n]=nv;else delete d.att[n];render();
+  try{const r=await fetch(API,{method:'POST',body:JSON.stringify({action:'att',day:S.day,nama:n,status:nv})});
+   const j=await r.json();if(!j.ok)throw new Error(j.error);toast(nv?n.split(' ')[0]+': '+nv:'Status dihapus')}
+  catch(e){toast('Gagal: '+e.message);load()}
+}
+// ===== Bottom sheet input =====
+function openS(r){const a=S.d.arrivals.find(x=>x.row==r);S.sel=a;S.unit=a.unit;S.shift=a.shift||'';
+ $('#sh').innerHTML=`<div class="row" style="margin-bottom:14px"><span class="plate">${a.plat}</span><div><b>${a.sup}</b><div class="lead">PIC ${a.pic} · ${a.netto} kg</div></div></div>
+ <label>Mesin chopper</label><div class="chips" id="uc">${S.d.units.map(u=>`<button class="chip ${u==S.unit?'on':''}" onclick="pu(this,'${u}')">🚜 ${u}</button>`).join('')}</div>
+ <label>Shift (dihitung ke tonase shift)</label><div class="chips" id="sc">${SHIFTS.map((k,i)=>`<button class="chip ${S.shift==k?'on k-sh'+(i+1):''}" onclick="ps(this,'${k}',${i+1})">${i?'🌙':'☀️'} ${k}</button>`).join('')}</div>
+ <div class="two"><div><label>Jam mulai</label><input type="time" id="m" value="${a.mulai}"></div><div><label>Jam selesai</label><input type="time" id="f" value="${a.selesai}"></div></div>
+ <div class="two" style="margin-bottom:12px"><button class="btn s" onclick="$('#m').value=hm();pr()">▶ Mulai sekarang</button><button class="btn s" onclick="$('#f').value=hm();pr()">⏹ Selesai sekarang</button></div>
+ <div class="card" style="background:var(--g1);text-align:center;margin-bottom:12px">Durasi: <b id="pd">${fd(dur(a.mulai,a.selesai))}</b></div>
+ <button class="btn" id="sv" onclick="save()">Simpan</button>`;
+ $('#bg').classList.add('on');$('#sh').classList.add('on');$('#m').oninput=$('#f').oninput=pr}
+function ps(b,k,i){S.shift=k;document.querySelectorAll('#sc .chip').forEach(c=>c.className='chip');b.className='chip on k-sh'+i}
+function pu(b,u){S.unit=u;document.querySelectorAll('#uc .chip').forEach(c=>c.classList.remove('on'));b.classList.add('on')}
+function pr(){$('#pd').textContent=fd(dur($('#m').value,$('#f').value))}
+function closeS(){$('#bg').classList.remove('on');$('#sh').classList.remove('on')}
+async function save(){
+  const m=$('#m').value,f=$('#f').value;
+  if(!S.unit)return toast('Pilih mesin chopper dulu');
+  if(!S.shift)return toast('Pilih Shift 1 / Shift 2');
+  if(!m)return toast('Isi jam mulai');
+  const b=$('#sv');b.textContent='Menyimpan…';b.disabled=true;
+  try{const r=await fetch(API,{method:'POST',body:JSON.stringify({row:S.sel.row,unit:S.unit,shift:S.shift,mulai:m,selesai:f})});
+   const j=await r.json();if(!j.ok)throw new Error(j.error);
+   Object.assign(S.sel,{unit:S.unit,shift:S.shift,mulai:m,selesai:f,durasi:dur(m,f)??''});
+   closeS();render();toast('Tersimpan ✅')}
+  catch(e){toast('Gagal: '+e.message)}b.textContent='Simpan';b.disabled=false;
+}
+if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js');
+load();
+</script></body></html>
