@@ -43,10 +43,19 @@ h3{font-size:15px;margin:6px 4px 10px;display:flex;align-items:center;gap:6px}
 .shg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
 .shc{border-radius:18px;padding:14px;color:#fff;box-shadow:0 2px 12px #14301c14}
 .shc.s1{background:var(--hay);color:var(--soil)}.shc.s2{background:var(--blue)}
-.shc small{display:block;font-size:12px;font-weight:600;opacity:.85}.shc b{display:block;font-size:26px;font-weight:800;margin:4px 0 2px}.shc span{font-size:12px;opacity:.9}
+.shc small{display:block;font-size:12px;font-weight:600;opacity:.85}.shc b{display:block;font-size:26px;font-weight:800;margin:4px 0 2px}.shc span{display:block;font-size:12px;opacity:.9}
 .shbar{display:flex;height:12px;border-radius:99px;overflow:hidden;background:var(--g1);margin:12px 0 8px}.shbar i{display:block;transition:width 1s}.shbar .b1{background:var(--hay)}.shbar .b2{background:var(--blue)}
 .shnote{font-size:12px;color:var(--mut);text-align:center}.shwarn{font-size:12px;color:var(--red);font-weight:600;margin-top:6px;text-align:center}
 .stag{font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;margin-left:4px;color:#fff}.stag.t1{background:#c98f0a}.stag.t2{background:var(--blue)}
+.chip:disabled{opacity:.45;text-decoration:line-through}
+textarea{resize:none;min-height:90px}
+.badge.bad{background:var(--red);color:#fff}.unit.trb{border-left:8px solid var(--red);background:#fdf1ee}.unit.trb .ic{background:#fbe0da}
+.ab.ot{border-style:dashed}.ab.ot.on{background:#e08a00;border-style:solid}
+.step{display:flex;align-items:center;justify-content:center;gap:18px;margin:12px 0}.step button{width:48px;height:48px;border-radius:50%;border:0;background:var(--g1);color:var(--g7);font:800 24px inherit;font-family:inherit}.step b{font-size:32px;min-width:110px;text-align:center}
+.ab.cs{border-style:dashed}.ab.cs.on{background:var(--blue);border-style:solid}.att.w .ab{flex:1 1 100%}
+.ab.on.a-Ijin{background:#8e6bb5}.t-Ijin{background:#8e6bb5}.p-Ijin{box-shadow:inset 4px 0 #8e6bb5;padding-left:10px}
+.sg5{gap:6px}.sg5 div{padding:10px 4px;text-align:center;font-size:12px}.sg5 b{font-size:20px}
+.cand{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 14px}
 .chip.on.k-sh1{background:var(--hay);color:#3b2a00}.chip.on.k-sh2{background:var(--blue)}
 .att{display:flex;gap:6px;margin-top:8px}.ab{flex:1;border:2px solid #dfe6da;background:#fff;border-radius:10px;padding:7px 0;font:600 12px inherit;font-family:inherit;color:var(--mut);transition:.2s}
 .ab:active{transform:scale(.93)}.ab.on{color:#fff;border-color:transparent}.ab.on.a-Masuk{background:var(--g5)}.ab.on.a-Sakit{background:var(--blue)}.ab.on.a-Mangkir{background:var(--red)}
@@ -57,7 +66,7 @@ h3{font-size:15px;margin:6px 4px 10px;display:flex;align-items:center;gap:6px}
 .chips{display:flex;gap:8px;overflow-x:auto;margin-bottom:10px;padding-bottom:4px}
 .chip{border:0;background:#fff;padding:9px 14px;border-radius:99px;font:600 13px inherit;font-family:inherit;white-space:nowrap;color:var(--ink);box-shadow:0 1px 6px #14301c14}
 .chip.on{background:var(--g7);color:#fff}
-input,select{width:100%;padding:12px 14px;border-radius:14px;border:2px solid var(--g1);font:inherit;background:#fff;margin-bottom:10px}
+input,select,textarea{width:100%;padding:12px 14px;border-radius:14px;border:2px solid var(--g1);font:inherit;background:#fff;margin-bottom:10px}
 input:focus{outline:none;border-color:var(--g5)}
 .days{display:flex;gap:8px;overflow-x:auto;margin-bottom:12px;padding:2px}
 .day{flex:none;width:52px;padding:8px 0;border-radius:14px;border:0;background:#fff;text-align:center;font-family:inherit}
@@ -141,16 +150,14 @@ function veh(a){const s=st(a);return`<div class="card v s-${s}" onclick="openS($
 
 const V={
 home(){const s=stats(),p=s.a.length?s.done.length/s.a.length:0,C=2*Math.PI*43;
- const sc=S.d.schedule.list,n=x=>sc.filter(r=>r.shift==x).length;
+ const E=eff(),n=x=>E.list.filter(r=>E.eff[r.nama]==x).length;
  return`<div class="card hero"><div style="position:relative"><svg class="ring" viewBox="0 0 104 104"><circle class="bg" cx="52" cy="52" r="43"/><circle class="fg" id="fg" cx="52" cy="52" r="43" stroke-dasharray="${C}" stroke-dashoffset="${C}" transform="rotate(-90 52 52)"/></svg><div class="ringtxt" data-c="${Math.round(p*100)}" data-sfx="%">0%</div></div>
  <div><h2>Progres chopper hari ini</h2><small>${s.done.length} dari ${s.a.length} truk selesai</small></div></div>
  <div class="grid"><div class="stat"><i>🚛</i><b data-c="${s.a.length}">0</b><span>Truk datang</span></div>
  <div class="stat"><i>⚖️</i><b data-c="${s.tot}">0</b><span>Total netto (kg)</span></div>
  <div class="stat"><i>⏳</i><b data-c="${s.wait}">0</b><span>Antre</span></div>
  <div class="stat"><i>⏱</i><b>${fd(s.avg)}</b><span>Rata-rata durasi</span></div></div>
- <h3>⚖️ Tonase chopper per shift</h3><div class="card" style="padding:12px"><div class="shg" style="margin-bottom:0">${SHIFTS.map((k,i)=>`<div class="shc s${i+1}"><small>${k}</small><b data-c="${s.sh[k].kg}">0</b><span>kg · ${s.sh[k].n} truk selesai</span></div>`).join('')}</div>
- ${(()=>{const a=s.sh['Shift 1'].kg,b=s.sh['Shift 2'].kg,t=a+b,d=Math.abs(a-b);return`<div class="shbar"><i class="b1" style="width:${t?a/t*100:50}%"></i><i class="b2" style="width:${t?b/t*100:50}%"></i></div><div class="shnote">${t?(d?'Selisih '+kg(d)+' kg · '+(a>b?'Shift 1':'Shift 2')+' lebih banyak':'Seimbang'):'Belum ada truk selesai'}</div>`})()}
- ${s.sh[''].n?`<div class="shwarn">⚠️ ${s.sh[''].n} truk selesai (${kg(s.sh[''].kg)} kg) belum diberi shift</div>`:''}</div>
+ ${trBanner()}${homeShift(s)}
  <h3>🔥 Sedang berjalan</h3>${s.run.map(veh).join('')||'<div class="card empty">Belum ada proses berjalan</div>'}
  <h3>👷 Shift hari ini</h3><div class="sg"><div class="sp"><b>${n('P')}</b>Pagi</div><div class="ss"><b>${n('S')}</b>Siang</div><div class="so"><b>${n('OFF')}</b>Libur</div></div>`},
 list(){const q=S.q.toLowerCase();
@@ -158,20 +165,29 @@ list(){const q=S.q.toLowerCase();
  return`<input id="q" placeholder="🔍 Cari plat / supplier / PIC" value="${S.q}" oninput="S.q=this.value;fl()">
  <div class="chips">${[['all','Semua'],['wait','Belum'],['run','Proses'],['done','Selesai'],['sh1','☀️ Shift 1'],['sh2','🌙 Shift 2']].map(([k,t])=>`<button class="chip k-${k} ${S.filter==k?'on':''}" onclick="S.filter='${k}';render()">${t}</button>`).join('')}</div>
  <div id="fl">${L.map(veh).join('')||'<div class="card empty">Tidak ada kendaraan</div>'}</div>`},
-jadwal(){const d=S.d,sc=d.schedule,att=d.att||{},now=new Date(),dim=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
+jadwal(){const d=S.d,att=d.att||{},E=eff(),now=new Date(),dim=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
  let h='<div class="days" id="ds">';for(let i=1;i<=dim;i++){const w=new Date(now.getFullYear(),now.getMonth(),i).getDay();
  h+=`<button class="day ${i==S.day?'on':''} ${i==d.today?'now':''}" onclick="S.day=${i};load()"><small>${HARI[w].slice(0,3)}</small><b>${i}</b></button>`}
- h+='</div>';const g=x=>sc.list.filter(r=>r.shift==x),work=sc.list.filter(r=>r.shift=='P'||r.shift=='S');
- const c=k=>work.filter(r=>att[r.nama]==k).length,bl=work.length-c('Masuk')-c('Sakit')-c('Mangkir');
- h+=`<div class="sg">${[['Masuk',c('Masuk')],['Sakit',c('Sakit')],['Mangkir',c('Mangkir')],['Belum',bl]].map(([k,n])=>`<div class="t-${k}"><b>${n}</b>${k}</div>`).join('')}</div>`;
- const grp=(t,x)=>{const l=g(x);if(!l.length)return'';const w=x!='OFF';
-  return`<h3>${t} (${l.length})</h3><div class="card">${l.map(r=>{const a=att[r.nama]||'';
-  return`<div class="person ${a?'p-'+a:''}"><div class="av ${/leader|kepala/i.test(r.jabatan)?'L':''}">${r.nama[0]}</div><div style="flex:1"><b>${r.nama}</b><div class="lead">${r.jabatan}</div>
-  ${w?`<div class="att">${['Masuk','Sakit','Mangkir'].map(k=>`<button class="ab ${a==k?'on a-'+k:''}" data-n="${r.nama}" data-k="${k}" onclick="setAtt(this)">${k}</button>`).join('')}</div>`:''}</div></div>`}).join('')}</div>`};
+ h+='</div>';const g=x=>E.list.filter(r=>E.eff[r.nama]==x),isW=n=>E.eff[n]=='P'||E.eff[n]=='S',work=E.list.filter(r=>isW(r.nama));
+ const c=k=>work.filter(r=>att[r.nama]==k).length,bl=work.length-['Masuk','Sakit','Ijin','Mangkir'].reduce((a,k)=>a+c(k),0);
+ h+=`<div class="sg sg5">${[['Masuk',c('Masuk')],['Sakit',c('Sakit')],['Ijin',c('Ijin')],['Mangkir',c('Mangkir')],['Belum',bl]].map(([k,n])=>`<div class="t-${k}"><b>${n}</b>${k}</div>`).join('')}</div>`;
+ h+=otSum(E);
+ const person=r=>{const n=r.nama,a=att[n]||'',ot=(d.ot||{})[n],w=isW(n),t=E.tag[n],mine=E.sw[n]&&E.tag[n]?E.sw[n]:'';
+  return`<div class="person ${a&&w?'p-'+a:''}"><div class="av ${/leader|kepala/i.test(r.jabatan)?'L':''}">${n[0]}</div><div style="flex:1"><b>${n}</b><div class="lead">${r.jabatan}</div>
+  ${t?`<div class="lead" style="color:var(--blue);font-weight:600">🔄 Tukar dengan ${t} · ${SN[E.orig[n]]||E.orig[n]} → ${SN[E.eff[n]]||E.eff[n]}</div>`:''}
+  ${ot?`<div class="lead" style="color:#b26a00;font-weight:600">⏱ Lembur ${ot.jam} jam · ${esc(ot.desc)}</div>`:''}
+  ${w?`<div class="att">${['Masuk','Sakit','Ijin','Mangkir'].map(k=>`<button class="ab ${a==k?'on a-'+k:''}" data-n="${n}" data-k="${k}" onclick="setAtt(this)">${k}</button>`).join('')}</div>`:''}
+  ${(!t||mine)?`<div class="att w"><button class="ab cs ${mine?'on':''}" data-n="${n}" onclick="${mine?'unSwap(this)':'openSwap(this)'}">${mine?'🔄 Tukar dg '+mine+' (ketuk untuk batal)':'🔄 Change Shift'}</button></div>`:''}
+  <div class="att w"><button class="ab ot ${ot?'on':''}" data-n="${n}" onclick="openOT(this)">${ot?'⏱ Lembur '+ot.jam+' jam (ubah)':'⏱ Lembur'}</button></div></div></div>`};
+ const grp=(t,x)=>{const l=g(x);if(!l.length)return'';return`<h3>${t} (${l.length})</h3><div class="card">${l.map(person).join('')}</div>`};
  return h+grp('☀️ Shift Pagi','P')+grp('🌙 Shift Siang','S')+grp('🛌 Libur','OFF')},
-unit(){const s=stats();return S.d.units.map(u=>{const mine=s.a.filter(a=>a.unit==u),r=mine.find(a=>st(a)=='run'),dn=mine.filter(a=>st(a)=='done');
- const ds=dn.map(a=>dur(a.mulai,a.selesai)).filter(x=>x!=null);
- return`<div class="card unit ${r?'busy':''}"><div class="ic">🚜</div><div style="flex:1"><b>${u}</b><div class="lead">${r?'Sedang chopper '+r.plat:'Siap dipakai'}</div><div class="lead">${dn.length} truk selesai · ${nt(dn.reduce((a,x)=>a+nt(x.netto),0))>0?kg(dn.reduce((a,x)=>a+nt(x.netto),0))+' kg':'0 kg'} · rata ${fd(ds.length?Math.round(ds.reduce((a,b)=>a+b)/ds.length):null)}</div></div><span class="badge ${r?'run':'done'}">${r?'Jalan':'Free'}</span></div>`}).join('')||'<div class="empty">Isi sheet Unit</div>'}
+unit(){const s=stats(),tm=trMap();
+ const cards=S.d.units.map(u=>{const t=tm[u];
+  if(t)return`<div class="card unit trb"><div class="ic">🔧</div><div style="flex:1"><b>${u}</b><div class="lead" style="color:var(--red);font-weight:600">Trouble · lapor ${fdt(t.tgl+' '+t.jam)}</div><div class="lead">${t.masalah}</div>${t.mekanik?`<div class="lead">Mekanik: ${t.mekanik}${t.start?' · mulai '+fdt(t.start):''}</div>`:'<div class="lead">Menunggu mekanik</div>'}<button class="btn s" style="width:100%;margin-top:8px" onclick="openFix(${t.row})">✅ Konfirmasi perbaikan</button></div><span class="badge bad">Trouble</span></div>`;
+  const mine=s.a.filter(a=>a.unit==u),r=mine.find(a=>st(a)=='run'),dn=mine.filter(a=>st(a)=='done'),ds=dn.map(a=>dur(a.mulai,a.selesai)).filter(x=>x!=null),tk=dn.reduce((a,x)=>a+nt(x.netto),0);
+  return`<div class="card unit ${r?'busy':''}"><div class="ic">🚜</div><div style="flex:1"><b>${u}</b><div class="lead">${r?'Sedang chopper '+r.plat:'Siap dipakai'}</div><div class="lead">${dn.length} truk selesai · ${kg(tk)} kg · rata ${fd(ds.length?Math.round(ds.reduce((a,b)=>a+b)/ds.length):null)}</div></div><span class="badge ${r?'run':'done'}">${r?'Jalan':'Free'}</span></div>`}).join('')||'<div class="empty">Isi sheet Unit</div>';
+ const hist=trAll().filter(t=>t.status=='Selesai').slice(-5).reverse();
+ return`<button class="btn" style="margin-bottom:12px" onclick="openTrouble()">🔧 Lapor Trouble ke Mekanik</button>`+cards+(hist.length?`<h3>📋 Riwayat perbaikan</h3><div class="card">${hist.map(t=>`<div class="person"><div style="flex:1"><b>${t.unit}</b> <span class="lead">${t.masalah}</span><div class="lead">Mekanik ${t.mekanik} · ${fdt(t.start)} → ${fdt(t.selesai)} · ${fd(+t.durasi||null)}</div></div></div>`).join('')}</div>`:'')},
 };
 function fl(){const q=S.q.toLowerCase();$('#fl').innerHTML=S.d.arrivals.filter(a=>fm(a)&&(a.plat+a.sup+a.pic).toLowerCase().includes(q)).map(veh).join('')||'<div class="card empty">Tidak ada kendaraan</div>'}
 
@@ -205,7 +221,7 @@ async function setAtt(b){
 // ===== Bottom sheet input =====
 function openS(r){const a=S.d.arrivals.find(x=>x.row==r);S.sel=a;S.unit=a.unit;S.shift=a.shift||'';
  $('#sh').innerHTML=`<div class="row" style="margin-bottom:14px"><span class="plate">${a.plat}</span><div><b>${a.sup}</b><div class="lead">PIC ${a.pic} · ${a.netto} kg</div></div></div>
- <label>Mesin chopper</label><div class="chips" id="uc">${S.d.units.map(u=>`<button class="chip ${u==S.unit?'on':''}" onclick="pu(this,'${u}')">🚜 ${u}</button>`).join('')}</div>
+ <label>Mesin chopper</label><div class="chips" id="uc">${S.d.units.map(u=>{const bad=trMap()[u]&&u!=a.unit;return`<button class="chip ${u==S.unit?'on':''}" ${bad?'disabled':''} onclick="pu(this,'${u}')">${bad?'🔧':'🚜'} ${u}${bad?' (trouble)':''}</button>`}).join('')}</div>
  <label>Shift (dihitung ke tonase shift)</label><div class="chips" id="sc">${SHIFTS.map((k,i)=>`<button class="chip ${S.shift==k?'on k-sh'+(i+1):''}" onclick="ps(this,'${k}',${i+1})">${i?'🌙':'☀️'} ${k}</button>`).join('')}</div>
  <div class="two"><div><label>Jam mulai</label><input type="time" id="m" value="${a.mulai}"></div><div><label>Jam selesai</label><input type="time" id="f" value="${a.selesai}"></div></div>
  <div class="two" style="margin-bottom:12px"><button class="btn s" onclick="$('#m').value=hm();pr()">▶ Mulai sekarang</button><button class="btn s" onclick="$('#f').value=hm();pr()">⏹ Selesai sekarang</button></div>
@@ -219,6 +235,7 @@ function closeS(){$('#bg').classList.remove('on');$('#sh').classList.remove('on'
 async function save(){
   const m=$('#m').value,f=$('#f').value;
   if(!S.unit)return toast('Pilih mesin chopper dulu');
+  if(trMap()[S.unit]&&S.unit!=S.sel.unit)return toast('Unit '+S.unit+' sedang trouble');
   if(!S.shift)return toast('Pilih Shift 1 / Shift 2');
   if(!m)return toast('Isi jam mulai');
   const b=$('#sv');b.textContent='Menyimpan…';b.disabled=true;
@@ -228,6 +245,83 @@ async function save(){
    closeS();render();toast('Tersimpan ✅')}
   catch(e){toast('Gagal: '+e.message)}b.textContent='Simpan';b.disabled=false;
 }
+
+const SN={P:'Pagi',S:'Siang',OFF:'Libur'};
+const fdt=s=>{if(!s)return'-';const [d,t]=String(s).split(' '),p=(d||'').split('-');return p.length==3?p[2]+'/'+p[1]+' '+(t||''):s};
+const lt=()=>{const n=new Date();return new Date(n-n.getTimezoneOffset()*60000).toISOString().slice(0,16)};
+const trAll=()=>S.d.trouble||[],trOpen=()=>trAll().filter(t=>t.status!='Selesai');
+const trMap=()=>{const m={};trOpen().forEach(t=>m[t.unit]=t);return m};
+function showS(h){$('#sh').innerHTML=h;$('#bg').classList.add('on');$('#sh').classList.add('on')}
+async function post(o){const r=await fetch(API,{method:'POST',body:JSON.stringify(o)});const j=await r.json();if(!j.ok)throw new Error(j.error);return j}
+function trBanner(){const T=trOpen();return T.length?`<div class="card" style="background:#fbe0da;border-left:8px solid var(--red)">🔧 <b>${T.length} unit trouble:</b> ${T.map(t=>t.unit).join(', ')}</div>`:''}
+
+// Estimasi pembagian tonase dari kebutuhan pakan (Unit!C2)
+function homeShift(s){const need=S.d.need||0,tg=Math.ceil(need/2),tot=s.done_kg;let h='';
+ if(need){const p=Math.min(100,Math.round(tot/need*100));
+  h+=`<h3>🌾 Kebutuhan pakan hari ini</h3><div class="card"><div class="two" style="margin-bottom:8px"><div><label>Kebutuhan</label><b style="font-size:22px">${kg(need)}</b> <span class="lead">kg</span></div><div><label>Sudah dichopper</label><b style="font-size:22px">${kg(tot)}</b> <span class="lead">kg</span></div></div>
+  <div class="shbar" style="margin:0 0 8px"><i style="width:${p}%;background:var(--g5)"></i></div><div class="shnote">${p}% tercapai · sisa ${kg(Math.max(0,need-tot))} kg · target per shift ${kg(tg)} kg</div></div>`}
+ h+=`<h3>⚖️ Tonase chopper per shift</h3><div class="card" style="padding:12px"><div class="shg">${SHIFTS.map((k,i)=>{const x=s.sh[k];
+  return`<div class="shc s${i+1}"><small>${k}</small><b data-c="${x.kg}">0</b><span>kg · ${x.n} truk selesai</span>${need?`<div class="shbar" style="height:8px;background:#ffffff55;margin:10px 0 4px"><i style="width:${Math.min(100,x.kg/tg*100)}%;background:#fff"></i></div><span>Target ${kg(tg)} · sisa ${kg(Math.max(0,tg-x.kg))} kg</span>`:''}</div>`}).join('')}</div>`;
+ const a=s.sh['Shift 1'].kg,b=s.sh['Shift 2'].kg,t=a+b,d=Math.abs(a-b);
+ h+=`<div class="shbar"><i class="b1" style="width:${t?a/t*100:50}%"></i><i class="b2" style="width:${t?b/t*100:50}%"></i></div><div class="shnote">${t?(d?'Selisih '+kg(d)+' kg · '+(a>b?'Shift 1':'Shift 2')+' lebih banyak':'Seimbang'):'Belum ada truk selesai'}</div>`;
+ if(s.sh[''].n)h+=`<div class="shwarn">⚠️ ${s.sh[''].n} truk selesai (${kg(s.sh[''].kg)} kg) belum diberi shift</div>`;
+ return h+'</div>'}
+
+// Jadwal efektif setelah tukar shift
+function eff(){const d=S.d,list=d.schedule.list,sw=d.swap||{},orig={},e={},tag={};
+ list.forEach(r=>{orig[r.nama]=r.shift;e[r.nama]=r.shift});
+ Object.keys(sw).forEach(a=>{const b=sw[a];if(!(a in orig)||!(b in orig))return;e[a]=orig[b];e[b]=orig[a];tag[a]=b;tag[b]=a});
+ return{list,sw,orig,eff:e,tag}}
+function openSwap(btn){const n=btn.dataset.n,E=eff();
+ S.swN=n;S.swP='';S.cand=E.list.filter(r=>r.nama!=n&&!E.tag[r.nama]&&E.orig[r.nama]!=E.orig[n]);
+ showS(`<h3 style="margin:0 0 4px">🔄 Change Shift</h3><div class="lead"><b>${n}</b> (${SN[E.orig[n]]||E.orig[n]}) ditukar dengan:</div>
+ <div class="cand">${S.cand.map((r,i)=>`<button class="chip" onclick="pickSw(this,${i})">${r.nama} · ${SN[r.shift]||r.shift}</button>`).join('')||'<div class="empty">Tidak ada operator yang bisa ditukar</div>'}</div>
+ <div class="card" style="background:var(--g1);text-align:center;margin-bottom:12px" id="swv">Pilih operator</div><button class="btn" onclick="saveSwap()">Simpan tukar shift</button>`)}
+function pickSw(b,i){const E=eff(),r=S.cand[i];S.swP=r.nama;document.querySelectorAll('.cand .chip').forEach(c=>c.classList.remove('on'));b.classList.add('on');
+ $('#swv').innerHTML=`${S.swN} (${SN[E.orig[S.swN]]}) ⇄ ${r.nama} (${SN[r.shift]||r.shift})`}
+async function saveSwap(){if(!S.swP)return toast('Pilih operator pengganti');
+ const n=S.swN,p=S.swP,d=S.d;d.swap=d.swap||{};d.swap[n]=p;closeS();render();
+ try{await post({action:'swap',day:S.day,nama:n,partner:p});toast('Tukar shift: '+n.split(' ')[0]+' ⇄ '+p.split(' ')[0])}catch(e){toast('Gagal: '+e.message);load()}}
+async function unSwap(btn){const n=btn.dataset.n,d=S.d;if(!confirm('Batalkan tukar shift '+n+' dengan '+d.swap[n]+'?'))return;
+ delete d.swap[n];render();try{await post({action:'swap',day:S.day,nama:n,partner:''});toast('Tukar shift dibatalkan')}catch(e){toast('Gagal: '+e.message);load()}}
+
+
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function otSum(E){const o=S.d.ot||{},l=E.list.filter(r=>o[r.nama]),j=l.reduce((a,r)=>a+(+o[r.nama].jam||0),0);
+ return l.length?`<div class="card" style="padding:12px;margin-bottom:12px;background:#fdf0cc">⏱ <b>Lembur hari ini:</b> ${l.length} orang · ${j} jam</div>`:''}
+function openOT(btn){const n=btn.dataset.n,cur=(S.d.ot||{})[n];S.otN=n;S.otJ=cur?+cur.jam:1;
+ showS(`<h3 style="margin:0 0 4px">⏱ Lembur</h3><div class="lead"><b>${n}</b> · tanggal ${S.day}</div>
+ <div class="step"><button onclick="otStep(-1)">−</button><b id="otj">${S.otJ} jam</b><button onclick="otStep(1)">+</button></div>
+ <label>Deskripsi lembur</label><textarea id="otd" placeholder="Contoh: menyelesaikan sisa truk antre, menggantikan operator…">${esc(cur?cur.desc:'')}</textarea>
+ <button class="btn" style="margin-top:10px" onclick="saveOT()">Simpan lembur</button>
+ ${cur?'<button class="btn s" style="width:100%;margin-top:8px;color:var(--red)" onclick="delOT()">Hapus lembur</button>':''}`)}
+function otStep(x){S.otJ=Math.max(1,Math.min(12,S.otJ+x));$('#otj').textContent=S.otJ+' jam'}
+async function sendOT(n,jam,desc,msg){const d=S.d;d.ot=d.ot||{};if(jam)d.ot[n]={jam,desc};else delete d.ot[n];closeS();render();
+ try{await post({action:'lembur',day:S.day,nama:n,jam,desc});toast(msg)}catch(e){toast('Gagal: '+e.message);load()}}
+function saveOT(){const desc=$('#otd').value.trim();if(!desc)return toast('Isi deskripsi lembur');sendOT(S.otN,S.otJ,desc,'Lembur '+S.otN.split(' ')[0]+': '+S.otJ+' jam')}
+function delOT(){sendOT(S.otN,0,'','Lembur dihapus')}
+// Trouble unit
+function openTrouble(){const tm=trMap();S.tus=S.d.units.filter(u=>!tm[u]);S.tu='';
+ showS(`<h3 style="margin:0 0 12px">🔧 Lapor Trouble ke Mekanik</h3><label>Unit</label>
+ <div class="chips" id="tuc">${S.tus.map((u,i)=>`<button class="chip" onclick="ptu(this,${i})">🚜 ${u}</button>`).join('')||'<div class="lead">Semua unit sudah dilaporkan trouble</div>'}</div>
+ <label>Deskripsi masalah</label><textarea id="td" placeholder="Contoh: pisau tumpul, hidrolik bocor, mesin mati…"></textarea>
+ <div class="lead" style="margin-bottom:12px">Selama trouble, unit tidak bisa dipilih untuk proses chopper.</div><button class="btn" id="tsv" onclick="submitTrouble()">Kirim laporan</button>`)}
+function ptu(b,i){S.tu=S.tus[i];document.querySelectorAll('#tuc .chip').forEach(c=>c.classList.remove('on'));b.classList.add('on')}
+async function submitTrouble(){const m=$('#td').value.trim();if(!S.tu)return toast('Pilih unit dulu');if(!m)return toast('Isi deskripsi masalah');
+ const b=$('#tsv');b.textContent='Mengirim…';b.disabled=true;
+ try{await post({action:'trouble',unit:S.tu,masalah:m});await load();closeS();toast('Laporan terkirim ke mekanik 🔧')}
+ catch(e){toast('Gagal: '+e.message);b.textContent='Kirim laporan';b.disabled=false}}
+function openFix(row){const t=trAll().find(x=>x.row==row);if(!t)return;
+ showS(`<div class="row" style="margin-bottom:12px"><span class="plate">🔧 ${t.unit}</span><div><b>Konfirmasi perbaikan</b><div class="lead">${t.masalah}</div></div></div>
+ <label>Nama mekanik</label><input id="fm" placeholder="Nama mekanik" value="${t.mekanik||''}">
+ <div class="two"><div><label>Start perbaikan</label><input type="datetime-local" id="fs" value="${(t.start||'').replace(' ','T')}"></div><div><label>Selesai perbaikan</label><input type="datetime-local" id="fe" value="${(t.selesai||'').replace(' ','T')}"></div></div>
+ <div class="two" style="margin-bottom:12px"><button class="btn s" onclick="$('#fs').value=lt()">▶ Start sekarang</button><button class="btn s" onclick="$('#fe').value=lt()">⏹ Selesai sekarang</button></div>
+ <div class="lead" style="margin-bottom:12px">Unit baru bisa dipakai lagi setelah <b>Selesai perbaikan</b> diisi dan disimpan.</div><button class="btn" id="fsv" onclick="submitFix(${row})">Simpan</button>`)}
+async function submitFix(row){const m=$('#fm').value.trim(),a=$('#fs').value,e=$('#fe').value;
+ if(!m)return toast('Isi nama mekanik');if(!a)return toast('Isi start perbaikan');if(e&&e<a)return toast('Selesai harus setelah start');
+ const b=$('#fsv');b.textContent='Menyimpan…';b.disabled=true;
+ try{await post({action:'fix',row,mekanik:m,start:a.replace('T',' '),selesai:e.replace('T',' ')});await load();closeS();toast(e?'Unit siap dipakai lagi ✅':'Tersimpan, unit masih trouble')}
+ catch(x){toast('Gagal: '+x.message);b.textContent='Simpan';b.disabled=false}}
 if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js');
 load();
 </script></body></html>
