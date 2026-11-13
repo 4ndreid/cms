@@ -7,9 +7,10 @@ function doGet(e) {
   try {
     const ss = SpreadsheetApp.getActive(), p = e.parameter || {};
     const today = parseInt(Utilities.formatDate(new Date(), TZ, 'd'));
-    const day = parseInt(p.day) || today;
+    const day = parseInt(p.day) || today, A = getAtt(ss, day);
     return out({ok:true, today, day, now:Utilities.formatDate(new Date(), TZ, 'HH:mm'),
-      units:getUnits(ss), arrivals:getArrivals(ss), schedule:getSchedule(ss, day), att:getAtt(ss, day)});
+      units:getUnits(ss), need:getNeed(ss), arrivals:getArrivals(ss), schedule:getSchedule(ss, day),
+      att:A.st, swap:A.sw, trouble:getTrouble(ss)});
   } catch (err) { return out({ok:false, error:String(err)}); }
 }
 
@@ -17,15 +18,20 @@ function doPost(e) {
   const lock = LockService.getScriptLock();
   try {
     lock.waitLock(10000);
-    const d = JSON.parse(e.postData.contents);
+    const d = JSON.parse(e.postData.contents), ss = SpreadsheetApp.getActive();
     if (d.action === 'att') {
-      if (d.status && ['Masuk','Sakit','Mangkir'].indexOf(d.status) < 0) throw new Error('Status tidak valid');
+      if (d.status && ['Masuk','Sakit','Ijin','Mangkir'].indexOf(d.status) < 0) throw new Error('Status tidak valid');
       saveAtt(d); return out({ok:true});
     }
-    const sh = SpreadsheetApp.getActive().getSheetByName(SH.KD);
+    if (d.action === 'swap') { saveSwap(d); return out({ok:true}); }
+    if (d.action === 'trouble') { addTrouble(ss, d); return out({ok:true}); }
+    if (d.action === 'fix') { fixTrouble(ss, d); return out({ok:true}); }
+    const sh = ss.getSheetByName(SH.KD);
     const r = parseInt(d.row);
     if (!(r >= FIRST)) throw new Error('Baris tidak valid');
     if (!sh.getRange(r, 5).getDisplayValue()) throw new Error('Baris kosong');
+    const cur = sh.getRange(r, 7).getDisplayValue();
+    if (d.unit && d.unit !== cur && openTrouble(ss)[d.unit]) throw new Error('Unit ' + d.unit + ' sedang trouble');
     ensureHeader(sh);
     const rg = sh.getRange(r, 7, 1, 4);
     rg.setNumberFormat('@');
@@ -62,6 +68,10 @@ function getUnits(ss) {
   return sh.getRange(2, 1, n, 1).getDisplayValues().map(r => r[0].trim()).filter(String);
 }
 
+function getNeed(ss) {   // kebutuhan pakan per hari = sheet Unit, sel C2
+  return parseInt(String(ss.getSheetByName(SH.UNIT).getRange(2, 3).getDisplayValue()).replace(/\D/g, '')) || 0;
+}
+
 function getArrivals(ss) {
   const sh = ss.getSheetByName(SH.KD); ensureHeader(sh);
   const n = sh.getLastRow() - FIRST + 1;
@@ -85,7 +95,7 @@ function getSchedule(ss, day) {
   return {dayName, month:sh.getRange(1, 4).getDisplayValue() || sh.getRange(1, 16).getDisplayValue(), list};
 }
 
-/* ===== KEHADIRAN (Masuk / Sakit / Mangkir) -> sheet "Kehadiran" dibuat otomatis ===== */
+/* ===== KEHADIRAN (Masuk / Sakit / Ijin / Mangkir + Tukar Shift) -> sheet "Kehadiran" dibuat otomatis ===== */
 function dayKey(day) {
   const n = new Date(), y = Utilities.formatDate(n, TZ, 'yyyy'), m = Utilities.formatDate(n, TZ, 'MM');
   return y + '-' + m + '-' + ('0' + day).slice(-2);
@@ -94,26 +104,98 @@ function attSheet(ss) {
   let sh = ss.getSheetByName('Kehadiran');
   if (!sh) {
     sh = ss.insertSheet('Kehadiran');
-    sh.getRange(1, 1, 1, 4).setValues([['Tanggal', 'Nama', 'Status', 'Dicatat']])
-      .setBackground('#2e7d32').setFontColor('#ffffff').setFontWeight('bold');
-    sh.getRange('A:A').setNumberFormat('@'); sh.setFrozenRows(1);
+    sh.getRange('A:E').setNumberFormat('@'); sh.setFrozenRows(1);
   }
+  const h = sh.getRange(1, 1, 1, 5);
+  if (sh.getRange(1, 5).getDisplayValue() === '')
+    h.setValues([['Tanggal', 'Nama', 'Status', 'Dicatat', 'Tukar Shift Dengan']])
+     .setBackground('#2e7d32').setFontColor('#ffffff').setFontWeight('bold');
   return sh;
 }
 function getAtt(ss, day) {
-  const sh = attSheet(ss), n = sh.getLastRow() - 1, k = dayKey(day), m = {};
-  if (n < 1) return m;
-  sh.getRange(2, 1, n, 3).getDisplayValues().forEach(r => { if (r[0] === k) m[r[1]] = r[2]; });
-  return m;
+  const sh = attSheet(ss), n = sh.getLastRow() - 1, k = dayKey(day), st = {}, sw = {};
+  if (n < 1) return {st, sw};
+  sh.getRange(2, 1, n, 5).getDisplayValues().forEach(r => {
+    if (r[0] !== k) return;
+    if (r[2]) st[r[1]] = r[2];
+    if (r[4]) sw[r[1]] = r[4];
+  });
+  return {st, sw};
 }
-function saveAtt(d) {
-  const sh = attSheet(SpreadsheetApp.getActive()), k = dayKey(d.day), n = sh.getLastRow() - 1;
+// ubah status (d.status) ATAU tukar shift (d.partner) satu orang; baris dihapus bila keduanya kosong
+function upsertAtt(day, nama, patch) {
+  const sh = attSheet(SpreadsheetApp.getActive()), k = dayKey(day), n = sh.getLastRow() - 1;
   let row = 0;
-  if (n > 0) sh.getRange(2, 1, n, 2).getDisplayValues().some((r, i) => { if (r[0] === k && r[1] === d.nama) { row = i + 2; return true; } });
-  if (!d.status) { if (row) sh.deleteRow(row); return; }
-  const t = Utilities.formatDate(new Date(), TZ, 'HH:mm');
-  if (row) sh.getRange(row, 3, 1, 2).setValues([[d.status, t]]);
-  else sh.getRange(sh.getLastRow() + 1, 1, 1, 4).setNumberFormat('@').setValues([[k, d.nama, d.status, t]]);
+  if (n > 0) sh.getRange(2, 1, n, 2).getDisplayValues().some((r, i) => { if (r[0] === k && r[1] === nama) { row = i + 2; return true; } });
+  const cur = row ? sh.getRange(row, 1, 1, 5).getDisplayValues()[0] : [k, nama, '', '', ''];
+  if ('status' in patch) cur[2] = patch.status || '';
+  if ('partner' in patch) cur[4] = patch.partner || '';
+  cur[3] = Utilities.formatDate(new Date(), TZ, 'HH:mm');
+  if (!cur[2] && !cur[4]) { if (row) sh.deleteRow(row); return; }
+  if (row) sh.getRange(row, 1, 1, 5).setNumberFormat('@').setValues([cur]);
+  else sh.getRange(sh.getLastRow() + 1, 1, 1, 5).setNumberFormat('@').setValues([cur]);
+}
+function saveAtt(d) { upsertAtt(d.day, d.nama, {status: d.status}); }
+function saveSwap(d) {
+  const p = d.partner || '';
+  if (p) {
+    if (p === d.nama) throw new Error('Pilih operator lain');
+    const sh = attSheet(SpreadsheetApp.getActive()), n = sh.getLastRow() - 1, k = dayKey(d.day);
+    if (n > 0) sh.getRange(2, 1, n, 5).getDisplayValues().forEach(r => {
+      if (r[0] === k && r[1] !== d.nama && r[4] && (r[1] === p || r[4] === p || r[4] === d.nama))
+        throw new Error('Operator sudah punya tukar shift lain');
+    });
+  }
+  upsertAtt(d.day, d.nama, {partner: p});
+}
+
+/* ===== TROUBLE UNIT -> sheet "Trouble" dibuat otomatis ===== */
+function troubleSheet(ss) {
+  let sh = ss.getSheetByName('Trouble');
+  if (!sh) {
+    sh = ss.insertSheet('Trouble');
+    sh.getRange('A:I').setNumberFormat('@');
+    sh.getRange(1, 1, 1, 9).setValues([['Tanggal', 'Jam Lapor', 'Unit', 'Masalah', 'Status', 'Nama Mekanik', 'Start Perbaikan', 'Selesai Perbaikan', 'Durasi (mnt)']])
+      .setBackground('#c62828').setFontColor('#ffffff').setFontWeight('bold');
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+function getTrouble(ss) {   // semua yang masih trouble + 10 riwayat selesai terakhir
+  const sh = troubleSheet(ss), n = sh.getLastRow() - 1;
+  if (n < 1) return [];
+  const all = sh.getRange(2, 1, n, 9).getDisplayValues()
+    .map((r, i) => ({row:i + 2, tgl:r[0], jam:r[1], unit:r[2], masalah:r[3], status:r[4], mekanik:r[5], start:r[6], selesai:r[7], durasi:r[8]}))
+    .filter(t => t.unit);
+  return all.filter(t => t.status !== 'Selesai').concat(all.filter(t => t.status === 'Selesai').slice(-10)).sort((a, b) => a.row - b.row);
+}
+function openTrouble(ss) {
+  const m = {}; getTrouble(ss).forEach(t => { if (t.status !== 'Selesai') m[t.unit] = 1; }); return m;
+}
+function addTrouble(ss, d) {
+  const m = String(d.masalah || '').trim();
+  if (getUnits(ss).indexOf(d.unit) < 0) throw new Error('Unit tidak valid');
+  if (!m) throw new Error('Deskripsi masalah wajib diisi');
+  if (openTrouble(ss)[d.unit]) throw new Error('Unit ini sudah dilaporkan trouble');
+  const sh = troubleSheet(ss), now = new Date();
+  sh.getRange(sh.getLastRow() + 1, 1, 1, 9).setNumberFormat('@')
+    .setValues([[Utilities.formatDate(now, TZ, 'yyyy-MM-dd'), Utilities.formatDate(now, TZ, 'HH:mm'), d.unit, m, 'Trouble', '', '', '', '']]);
+}
+function fixTrouble(ss, d) {
+  const sh = troubleSheet(ss), r = parseInt(d.row);
+  if (!(r >= 2)) throw new Error('Baris tidak valid');
+  const cur = sh.getRange(r, 1, 1, 9).getDisplayValues()[0];
+  if (!cur[2]) throw new Error('Data trouble tidak ditemukan');
+  if (cur[4] === 'Selesai') throw new Error('Perbaikan sudah selesai');
+  const mk = String(d.mekanik || '').trim(), st = String(d.start || '').trim(), se = String(d.selesai || '').trim();
+  if (!mk) throw new Error('Nama mekanik wajib diisi');
+  if (!st) throw new Error('Start perbaikan wajib diisi');
+  let dur = '';
+  if (se) {
+    dur = Math.round((Utilities.parseDate(se, TZ, 'yyyy-MM-dd HH:mm') - Utilities.parseDate(st, TZ, 'yyyy-MM-dd HH:mm')) / 60000);
+    if (dur < 0) throw new Error('Selesai harus setelah start');
+  }
+  sh.getRange(r, 5, 1, 5).setNumberFormat('@').setValues([[se ? 'Selesai' : 'Trouble', mk, st, se, dur]]);
 }
 
 /* ===== ARSIP OTOMATIS TIAP TENGAH MALAM ===== */
