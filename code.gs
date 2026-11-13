@@ -10,7 +10,7 @@ function doGet(e) {
     const day = parseInt(p.day) || today, A = getAtt(ss, day);
     return out({ok:true, today, day, now:Utilities.formatDate(new Date(), TZ, 'HH:mm'),
       units:getUnits(ss), need:getNeed(ss), arrivals:getArrivals(ss), schedule:getSchedule(ss, day),
-      att:A.st, swap:A.sw, trouble:getTrouble(ss)});
+      att:A.st, swap:A.sw, ot:A.ot, trouble:getTrouble(ss)});
   } catch (err) { return out({ok:false, error:String(err)}); }
 }
 
@@ -23,6 +23,7 @@ function doPost(e) {
       if (d.status && ['Masuk','Sakit','Ijin','Mangkir'].indexOf(d.status) < 0) throw new Error('Status tidak valid');
       saveAtt(d); return out({ok:true});
     }
+    if (d.action === 'lembur') { saveLembur(d); return out({ok:true}); }
     if (d.action === 'swap') { saveSwap(d); return out({ok:true}); }
     if (d.action === 'trouble') { addTrouble(ss, d); return out({ok:true}); }
     if (d.action === 'fix') { fixTrouble(ss, d); return out({ok:true}); }
@@ -102,38 +103,42 @@ function dayKey(day) {
 }
 function attSheet(ss) {
   let sh = ss.getSheetByName('Kehadiran');
-  if (!sh) {
-    sh = ss.insertSheet('Kehadiran');
-    sh.getRange('A:E').setNumberFormat('@'); sh.setFrozenRows(1);
-  }
-  const h = sh.getRange(1, 1, 1, 5);
-  if (sh.getRange(1, 5).getDisplayValue() === '')
-    h.setValues([['Tanggal', 'Nama', 'Status', 'Dicatat', 'Tukar Shift Dengan']])
-     .setBackground('#2e7d32').setFontColor('#ffffff').setFontWeight('bold');
+  if (!sh) { sh = ss.insertSheet('Kehadiran'); sh.getRange('A:G').setNumberFormat('@'); sh.setFrozenRows(1); }
+  if (sh.getRange(1, 7).getDisplayValue() === '')
+    sh.getRange(1, 1, 1, 7).setValues([['Tanggal', 'Nama', 'Status', 'Dicatat', 'Tukar Shift Dengan', 'Lembur (jam)', 'Deskripsi Lembur']])
+      .setBackground('#2e7d32').setFontColor('#ffffff').setFontWeight('bold');
   return sh;
 }
 function getAtt(ss, day) {
-  const sh = attSheet(ss), n = sh.getLastRow() - 1, k = dayKey(day), st = {}, sw = {};
-  if (n < 1) return {st, sw};
-  sh.getRange(2, 1, n, 5).getDisplayValues().forEach(r => {
+  const sh = attSheet(ss), n = sh.getLastRow() - 1, k = dayKey(day), st = {}, sw = {}, ot = {};
+  if (n < 1) return {st, sw, ot};
+  sh.getRange(2, 1, n, 7).getDisplayValues().forEach(r => {
     if (r[0] !== k) return;
     if (r[2]) st[r[1]] = r[2];
     if (r[4]) sw[r[1]] = r[4];
+    if (r[5]) ot[r[1]] = {jam:r[5], desc:r[6]};
   });
-  return {st, sw};
+  return {st, sw, ot};
 }
-// ubah status (d.status) ATAU tukar shift (d.partner) satu orang; baris dihapus bila keduanya kosong
+// ubah status / tukar shift / lembur satu orang; baris dihapus bila semuanya kosong
 function upsertAtt(day, nama, patch) {
   const sh = attSheet(SpreadsheetApp.getActive()), k = dayKey(day), n = sh.getLastRow() - 1;
   let row = 0;
   if (n > 0) sh.getRange(2, 1, n, 2).getDisplayValues().some((r, i) => { if (r[0] === k && r[1] === nama) { row = i + 2; return true; } });
-  const cur = row ? sh.getRange(row, 1, 1, 5).getDisplayValues()[0] : [k, nama, '', '', ''];
+  const cur = row ? sh.getRange(row, 1, 1, 7).getDisplayValues()[0] : [k, nama, '', '', '', '', ''];
   if ('status' in patch) cur[2] = patch.status || '';
   if ('partner' in patch) cur[4] = patch.partner || '';
+  if ('jam' in patch) { cur[5] = patch.jam || ''; cur[6] = patch.jam ? patch.desc : ''; }
   cur[3] = Utilities.formatDate(new Date(), TZ, 'HH:mm');
-  if (!cur[2] && !cur[4]) { if (row) sh.deleteRow(row); return; }
-  if (row) sh.getRange(row, 1, 1, 5).setNumberFormat('@').setValues([cur]);
-  else sh.getRange(sh.getLastRow() + 1, 1, 1, 5).setNumberFormat('@').setValues([cur]);
+  if (!cur[2] && !cur[4] && !cur[5]) { if (row) sh.deleteRow(row); return; }
+  if (row) sh.getRange(row, 1, 1, 7).setNumberFormat('@').setValues([cur]);
+  else sh.getRange(sh.getLastRow() + 1, 1, 1, 7).setNumberFormat('@').setValues([cur]);
+}
+function saveLembur(d) {   // jam: bilangan bulat 1-12 (kelipatan 1 jam); 0 = hapus lembur
+  const j = parseInt(d.jam) || 0, desc = String(d.desc || '').trim();
+  if (j < 0 || j > 12) throw new Error('Lembur harus 1-12 jam');
+  if (j > 0 && !desc) throw new Error('Deskripsi lembur wajib diisi');
+  upsertAtt(d.day, d.nama, {jam: j, desc: desc});
 }
 function saveAtt(d) { upsertAtt(d.day, d.nama, {status: d.status}); }
 function saveSwap(d) {
