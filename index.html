@@ -157,6 +157,7 @@ home(){const s=stats(),p=s.a.length?s.done.length/s.a.length:0,C=2*Math.PI*43;
  <div class="stat"><i>⚖️</i><b data-c="${s.tot}">0</b><span>Total netto (kg)</span></div>
  <div class="stat"><i>⏳</i><b data-c="${s.wait}">0</b><span>Antre</span></div>
  <div class="stat"><i>⏱</i><b>${fd(s.avg)}</b><span>Rata-rata durasi</span></div></div>
+ <button class="btn" id="pdfb" style="margin-bottom:12px" onclick="downloadPDF()">📄 Download Laporan Harian (PDF)</button>
  ${trBanner()}${homeShift(s)}
  <h3>🔥 Sedang berjalan</h3>${s.run.map(veh).join('')||'<div class="card empty">Belum ada proses berjalan</div>'}
  <h3>👷 Shift hari ini</h3><div class="sg"><div class="sp"><b>${n('P')}</b>Pagi</div><div class="ss"><b>${n('S')}</b>Siang</div><div class="so"><b>${n('OFF')}</b>Libur</div></div>`},
@@ -322,6 +323,93 @@ async function submitFix(row){const m=$('#fm').value.trim(),a=$('#fs').value,e=$
  const b=$('#fsv');b.textContent='Menyimpan…';b.disabled=true;
  try{await post({action:'fix',row,mekanik:m,start:a.replace('T',' '),selesai:e.replace('T',' ')});await load();closeS();toast(e?'Unit siap dipakai lagi ✅':'Tersimpan, unit masih trouble')}
  catch(x){toast('Gagal: '+x.message);b.textContent='Simpan';b.disabled=false}}
+
+// ===== LAPORAN HARIAN PDF (cetak -> Simpan sebagai PDF) =====
+function buildReport(){
+ const d=S.d,s=stats(),E=eff(),att=d.att||{},ot=d.ot||{},need=d.need||0,tg=Math.ceil(need/2),now=new Date();
+ const tgl=now.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+ const iso=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+ const cetak=now.toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'})+' '+hm();
+ const pct=(a,b)=>b?Math.min(100,Math.round(a/b*100)):0;
+ const bar=p=>`<div class="bar"><i style="width:${p}%"></i></div>`;
+ const kpi=(v,l,u)=>`<td class="kpi"><div class="v">${v}${u?`<span class="u"> ${u}</span>`:''}</div><div class="l">${l}</div></td>`;
+ const chip=k=>`<span class="chip c-${k}">${lbl[k]}</span>`;
+ const tm=trMap(),sh=s.sh;
+ // shift
+ const shRows=SHIFTS.map(k=>{const x=sh[k];return`<tr><td><b>${k}</b></td><td class="c">${x.n}</td><td class="r">${kg(x.kg)}</td><td class="r">${need?kg(tg):'-'}</td><td class="r">${need?kg(Math.max(0,tg-x.kg)):'-'}</td><td>${need?bar(pct(x.kg,tg))+'<div class="pc">'+Math.round(x.kg/tg*100)+'%</div>':'-'}</td></tr>`}).join('')
+  +(sh[''].n?`<tr><td><i>Belum diberi shift</i></td><td class="c">${sh[''].n}</td><td class="r">${kg(sh[''].kg)}</td><td class="r">-</td><td class="r">-</td><td>-</td></tr>`:'');
+ const s1=sh['Shift 1'].kg,s2=sh['Shift 2'].kg,sel=Math.abs(s1-s2);
+ // unit
+ const uRows=d.units.map(u=>{const m=s.a.filter(a=>a.unit==u),dn=m.filter(a=>st(a)=='done'),ds=dn.map(a=>dur(a.mulai,a.selesai)).filter(x=>x!=null),run=m.some(a=>st(a)=='run');
+  return`<tr><td><b>${esc(u)}</b></td><td class="c">${dn.length}</td><td class="r">${kg(dn.reduce((a,x)=>a+nt(x.netto),0))}</td><td class="c">${fd(ds.length?Math.round(ds.reduce((a,b)=>a+b)/ds.length):null)}</td><td class="c">${tm[u]?'<span class="chip c-bad">Trouble</span>':run?'<span class="chip c-run">Jalan</span>':'<span class="chip c-done">Siap</span>'}</td></tr>`}).join('');
+ // truk
+ const tRows=s.a.map((a,i)=>{const k=st(a);return`<tr><td class="c">${i+1}</td><td><b>${esc(a.plat)}</b></td><td>${esc(a.sup)}</td><td>${esc(a.pic)}</td><td class="r">${esc(a.netto)}</td><td>${esc(a.unit||'-')}</td><td class="c">${esc(a.shift||'-')}</td><td class="c">${esc(a.mulai||'-')}</td><td class="c">${esc(a.selesai||'-')}</td><td class="c">${k=='done'?fd(dur(a.mulai,a.selesai)):'-'}</td><td class="c">${chip(k)}</td></tr>`}).join('')||'<tr><td colspan="11" class="c">Belum ada kedatangan truk</td></tr>';
+ // personel
+ const isW=n=>E.eff[n]=='P'||E.eff[n]=='S',work=E.list.filter(r=>isW(r.nama)),cnt=k=>work.filter(r=>att[r.nama]==k).length;
+ const belum=work.length-['Masuk','Sakit','Ijin','Mangkir'].reduce((a,k)=>a+cnt(k),0);
+ const otl=E.list.filter(r=>ot[r.nama]),otj=otl.reduce((a,r)=>a+(+ot[r.nama].jam||0),0);
+ const order={P:0,S:1,OFF:2};
+ const pRows=E.list.slice().sort((a,b)=>(order[E.eff[a.nama]]??9)-(order[E.eff[b.nama]]??9)).map((r,i)=>{const n=r.nama,t=E.tag[n],o=ot[n];
+  return`<tr><td class="c">${i+1}</td><td><b>${esc(n)}</b></td><td>${esc(r.jabatan)}</td><td class="c">${SN[E.eff[n]]||esc(E.eff[n])}</td><td class="c">${isW(n)?esc(att[n]||'Belum diisi'):'-'}</td><td>${t?'Tukar dengan '+esc(t)+' ('+(SN[E.orig[n]]||'')+' → '+(SN[E.eff[n]]||'')+')':'-'}</td><td class="c">${o?esc(o.jam)+' jam':'-'}</td><td>${o?esc(o.desc):'-'}</td></tr>`}).join('')||'<tr><td colspan="8" class="c">Tidak ada data jadwal</td></tr>';
+ // trouble
+ const T=trAll().filter(t=>t.status!='Selesai'||t.tgl==iso);
+ const trRows=T.map(t=>`<tr><td><b>${esc(t.unit)}</b></td><td class="c">${esc(fdt(t.tgl+' '+t.jam))}</td><td>${esc(t.masalah)}</td><td>${esc(t.mekanik||'-')}</td><td class="c">${esc(fdt(t.start))}</td><td class="c">${esc(fdt(t.selesai))}</td><td class="c">${t.durasi?fd(+t.durasi):'-'}</td><td class="c">${t.status=='Selesai'?'<span class="chip c-done">Selesai</span>':'<span class="chip c-bad">Trouble</span>'}</td></tr>`).join('')||'<tr><td colspan="8" class="c">Tidak ada trouble unit</td></tr>';
+ const prog=pct(s.done_kg,need);
+ const css=`@page{size:A4;margin:12mm 11mm 16mm;@bottom-left{content:"Laporan Harian Tim Chopper · ${tgl}";font:8px Arial;color:#6b7c70}@bottom-right{content:"Halaman " counter(page) " dari " counter(pages);font:8px Arial;color:#6b7c70}}
+ *{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;font-size:10px;color:#1b2a1f;margin:0;line-height:1.35}
+ table{width:100%;border-collapse:collapse}.hd{background:#14301c;color:#fff}.hd td{padding:14px 16px;vertical-align:middle}.hd .t{font-size:20px;font-weight:bold;letter-spacing:1px}.hd .s{font-size:11px;color:#b9d8c0;margin-top:2px;letter-spacing:.5px}.hd .r{text-align:right;font-size:10px;line-height:1.6;color:#d8ebdc}.hd .r b{color:#fff}
+ .acc{height:4px;background:#e0a526}
+ h2{font-size:12px;color:#14301c;border-bottom:2px solid #2e7d32;padding:0 0 3px;margin:16px 0 7px;page-break-after:avoid}h2 span{display:inline-block;background:#2e7d32;color:#fff;border-radius:3px;padding:1px 6px;margin-right:6px;font-size:10px}
+ .kt td.kpi{border:1px solid #cfe3d2;background:#f4f8f4;padding:8px 10px;width:25%}.kt .v{font-size:17px;font-weight:bold;color:#14301c}.kt .u{font-size:9px;font-weight:normal;color:#5d6e62}.kt .l{font-size:9px;color:#5d6e62;margin-top:1px;text-transform:uppercase;letter-spacing:.3px}
+ .gap td{height:6px;padding:0;border:0}
+ table.t th{background:#2e7d32;color:#fff;font-size:9px;padding:5px 5px;text-align:left;border:1px solid #2e7d32}table.t td{padding:4px 5px;border:1px solid #dbe7dd;vertical-align:middle}
+ table.t tr{page-break-inside:avoid}table.t tbody tr:nth-child(even) td{background:#f4f8f4}table.t tfoot td{background:#e3efe5;font-weight:bold;border-top:2px solid #2e7d32}
+ .c{text-align:center}.r{text-align:right}.bar{height:7px;background:#e1ebe3;border-radius:4px;overflow:hidden}.bar i{display:block;height:7px;background:#2e7d32}.pc{font-size:8px;color:#5d6e62;text-align:right}
+ .chip{display:inline-block;padding:1px 7px;border-radius:9px;font-size:8.5px;font-weight:bold;color:#fff}.c-done{background:#2e7d32}.c-run{background:#d99a0b}.c-wait{background:#8a968d}.c-bad{background:#c0392b}
+ .note{background:#fdf6df;border-left:4px solid #e0a526;padding:6px 9px;margin:7px 0 0;font-size:9.5px}.sum{font-size:10px;margin:0 0 8px}
+ .att td{border:1px solid #dbe7dd;text-align:center;padding:5px;width:16.6%;background:#f4f8f4}.att b{display:block;font-size:15px;color:#14301c}.att span{font-size:8.5px;color:#5d6e62;text-transform:uppercase}
+ .cat{border:1px solid #cfd9d1;height:70px;margin-top:2px}.sg{margin-top:12px;page-break-inside:avoid}.sg td{width:33.3%;text-align:center;padding:0 10px;font-size:9.5px;vertical-align:top}.sg .ln{height:56px;border-bottom:1px solid #1b2a1f;margin:0 14px 4px}`;
+ return`<!DOCTYPE html><html lang="id"><head><meta charset="utf-8"><title>Laporan-Harian-Chopper-${iso}</title><style>${css}</style></head><body>
+ <table class="hd"><tr><td><div class="t">LAPORAN HARIAN</div><div class="s">TIM CHOPPER · OPERASIONAL PAKAN</div></td><td class="r">No. Dokumen: <b>LHC-${iso.replace(/-/g,'')}</b><br>Tanggal: <b>${tgl}</b><br>Dicetak: ${cetak}</td></tr></table><div class="acc"></div>
+
+ <h2><span>1</span>Ringkasan Operasional</h2>
+ <table class="kt"><tr>${kpi(s.a.length,'Truk datang')}${kpi(s.done.length,'Truk selesai')}${kpi(s.run.length,'Sedang proses')}${kpi(s.wait,'Antrean')}</tr><tr class="gap"><td colspan="4"></td></tr>
+ <tr>${kpi(kg(s.tot),'Total netto datang','kg')}${kpi(kg(s.done_kg),'Netto dichopper','kg')}${kpi(need?kg(need):'-','Kebutuhan pakan','kg')}${kpi(fd(s.avg),'Rata-rata durasi')}</tr></table>
+ <div class="note">Dari <b>${s.a.length}</b> truk yang datang, <b>${s.done.length}</b> truk (${pct(s.done.length,s.a.length)}%) telah selesai dichopper dengan total <b>${kg(s.done_kg)} kg</b>${need?`, atau <b>${prog}%</b> dari kebutuhan pakan harian ${kg(need)} kg (sisa ${kg(Math.max(0,need-s.done_kg))} kg)`:''}.</div>
+
+ <h2><span>2</span>Pembagian Tonase per Shift</h2>
+ <table class="t"><thead><tr><th>Shift</th><th class="c">Truk Selesai</th><th class="r">Tonase (kg)</th><th class="r">Target (kg)</th><th class="r">Sisa (kg)</th><th style="width:26%">Pencapaian</th></tr></thead><tbody>${shRows}</tbody>
+ <tfoot><tr><td>Total</td><td class="c">${s.done.length}</td><td class="r">${kg(s.done_kg)}</td><td class="r">${need?kg(need):'-'}</td><td class="r">${need?kg(Math.max(0,need-s.done_kg)):'-'}</td><td>${need?prog+'%':'-'}</td></tr></tfoot></table>
+ <div class="sum" style="margin-top:6px">${s1+s2?(sel?`Selisih tonase antar shift <b>${kg(sel)} kg</b> (${s1>s2?'Shift 1':'Shift 2'} lebih banyak).`:'Tonase kedua shift seimbang.'):'Belum ada truk selesai.'}${need?` Target per shift dihitung sama rata (kebutuhan ÷ 2 = ${kg(tg)} kg).`:''}</div>
+
+ <h2><span>3</span>Kinerja Unit Chopper</h2>
+ <table class="t"><thead><tr><th>Unit</th><th class="c">Truk Selesai</th><th class="r">Tonase (kg)</th><th class="c">Rata-rata Durasi</th><th class="c">Status</th></tr></thead><tbody>${uRows||'<tr><td colspan="5" class="c">-</td></tr>'}</tbody></table>
+
+ <h2><span>4</span>Rincian Kedatangan &amp; Proses Truk</h2>
+ <table class="t"><thead><tr><th class="c">No</th><th>Plat</th><th>Supplier</th><th>PIC</th><th class="r">Netto (kg)</th><th>Unit</th><th class="c">Shift</th><th class="c">Mulai</th><th class="c">Selesai</th><th class="c">Durasi</th><th class="c">Status</th></tr></thead><tbody>${tRows}</tbody>
+ <tfoot><tr><td colspan="4">Total ${s.a.length} truk</td><td class="r">${kg(s.tot)}</td><td colspan="6"></td></tr></tfoot></table>
+
+ <h2><span>5</span>Personel &amp; Kehadiran</h2>
+ <table class="att"><tr><td><b>${cnt('Masuk')}</b><span>Masuk</span></td><td><b>${cnt('Sakit')}</b><span>Sakit</span></td><td><b>${cnt('Ijin')}</b><span>Ijin</span></td><td><b>${cnt('Mangkir')}</b><span>Mangkir</span></td><td><b>${belum}</b><span>Belum diisi</span></td><td><b>${otj}</b><span>Jam lembur</span></td></tr></table>
+ <table class="t" style="margin-top:7px"><thead><tr><th class="c">No</th><th>Nama</th><th>Jabatan</th><th class="c">Shift</th><th class="c">Kehadiran</th><th>Tukar Shift</th><th class="c">Lembur</th><th>Keterangan Lembur</th></tr></thead><tbody>${pRows}</tbody></table>
+
+ <h2><span>6</span>Trouble Unit</h2>
+ <table class="t"><thead><tr><th>Unit</th><th class="c">Dilaporkan</th><th>Masalah</th><th>Mekanik</th><th class="c">Start</th><th class="c">Selesai</th><th class="c">Durasi</th><th class="c">Status</th></tr></thead><tbody>${trRows}</tbody></table>
+
+ <h2><span>7</span>Catatan / Kendala</h2><div class="cat"></div>
+ <table class="sg"><tr><td>Dibuat oleh,<div class="ln"></div><b>Leader Koordinator</b></td><td>Diperiksa oleh,<div class="ln"></div><b>Supervisor</b></td><td>Disetujui oleh,<div class="ln"></div><b>Manager</b></td></tr></table>
+ </body></html>`}
+async function downloadPDF(){
+ const b=$('#pdfb');if(b){b.disabled=true;b.textContent='⏳ Menyiapkan laporan…'}
+ try{
+  if(S.d.day!=S.d.today){S.day=S.d.today;await load()}   // laporan selalu untuk hari ini
+  const f=document.createElement('iframe');f.style.cssText='position:fixed;right:0;bottom:0;width:1px;height:1px;opacity:0;border:0';
+  f.onload=()=>setTimeout(()=>{try{f.contentWindow.focus();f.contentWindow.print()}catch(e){toast('Gagal membuka dialog cetak')}},400);
+  document.body.appendChild(f);f.srcdoc=buildReport();setTimeout(()=>f.remove(),180000);
+  toast('Pilih “Simpan sebagai PDF” pada dialog cetak');
+ }catch(e){toast('Gagal membuat laporan: '+e.message)}
+ const b2=$('#pdfb');if(b2){b2.disabled=false;b2.textContent='📄 Download Laporan Harian (PDF)'}
+}
 if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js');
 load();
 </script></body></html>
